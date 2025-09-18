@@ -21,7 +21,9 @@ pub fn ZMap(comptime MT: type) type {
         }
 
         pub fn getNode(self: *const Self, comptime key: [:0]const u8) ?*vs.Node {
-            return self.zapi.mapGetNode(self.map, key, 0, null);
+            var err: vs.MapPropertyError = undefined;
+            const node = self.zapi.mapGetNode(self.map, key, 0, &err);
+            return if (err == .Success) node else null;
         }
 
         pub fn getNodeVi(self: *const Self, comptime key: [:0]const u8) ?struct { *vs.Node, *const vs.VideoInfo } {

@@ -80,13 +80,16 @@ fn invertFree(instance_data: ?*anyopaque, core: ?*vs.Core, vsapi: ?*const vs.API
     allocator.destroy(d);
 }
 
-fn invertCreate(in: ?*const vs.Map, out: ?*vs.Map, user_data: ?*anyopaque, core: ?*vs.Core, vsapi: ?*const vs.API) callconv(.c) void {
-    _ = user_data;
+const name = "Invert";
+
+fn invertCreate(in: ?*const vs.Map, out: ?*vs.Map, _: ?*anyopaque, core: ?*vs.Core, vsapi: ?*const vs.API) callconv(.c) void {
     var d: InvertData = undefined;
+    var print_buf: [256]u8 = undefined;
 
     const zapi = ZAPI.init(vsapi, core, null);
     const map_in = zapi.initZMap(in);
-    const map_out = zapi.initZMap(out);
+    var map_out = zapi.initZMap(out);
+    map_out.print_buf = &print_buf;
 
     // getNodeVi returns a tuple with [vs.Node, vs.VideoInfo],
     // use getNodeVi2 if you want a struct.
@@ -102,7 +105,7 @@ fn invertCreate(in: ?*const vs.Map, out: ?*vs.Map, user_data: ?*anyopaque, core:
     const enabled = map_in.getValue(i32, "enabled") orelse 1;
 
     if ((enabled < 0) or (enabled > 1)) {
-        map_out.setError("Invert: enabled must be 0 or 1");
+        map_out.setError2("{s}: enabled must be {} or {}", .{ name, 0, 1 });
         zapi.freeNode(d.node);
         return;
     }
@@ -125,7 +128,7 @@ fn invertCreate(in: ?*const vs.Map, out: ?*vs.Map, user_data: ?*anyopaque, core:
         .{ .source = d.node, .requestPattern = .StrictSpatial },
     };
 
-    zapi.createVideoFilter(out, "Invert", d.vi, invertGetFrame, invertFree, .Parallel, &dep, data);
+    zapi.createVideoFilter(out, name, d.vi, invertGetFrame, invertFree, .Parallel, &dep, data);
 }
 
 export fn VapourSynthPluginInit2(plugin: *vs.Plugin, vspapi: *const vs.PLUGINAPI) void {

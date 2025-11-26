@@ -11,6 +11,7 @@ pub fn ZMap(comptime MT: type) type {
         const Self = @This();
         map: MT,
         zapi: *const ZAPI,
+        print_buf: ?[]u8 = null,
 
         pub fn init(map: MT, zapi: *const ZAPI) Self {
             return Self{ .map = map, .zapi = zapi };
@@ -269,6 +270,20 @@ pub fn ZMap(comptime MT: type) type {
 
         pub fn setError(self: *const Self, err_msg: [:0]const u8) void {
             self.zapi.mapSetError(self.map, err_msg);
+        }
+
+        /// Formatted setError, requires ZMap.print_buf to be set during initialization.
+        pub fn setError2(self: *const Self, comptime fmt: [:0]const u8, args: anytype) void {
+            if (self.print_buf) |buf| {
+                if (fmt.len + 2 > buf.len) {
+                    @panic("ZMap.setError2: print_buf is too small for the formatted message.");
+                }
+
+                const msg = std.fmt.bufPrintZ(buf, fmt, args) catch fmt;
+                self.zapi.mapSetError(self.map, msg);
+            } else {
+                @panic("ZMap.setError2: print_buf is null, initialization required.");
+            }
         }
 
         pub fn deleteKey(self: *const Self, key: [:0]const u8) void {

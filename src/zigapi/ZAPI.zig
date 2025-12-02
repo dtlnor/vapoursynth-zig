@@ -68,6 +68,11 @@ pub fn initZMap(self: *const ZAPI, map: anytype) ZMap(@TypeOf(map)) {
     return ZMap(@TypeOf(map)).init(map, self);
 }
 
+/// initialize ZMap with buffer for setError2
+pub fn initZMap2(self: *const ZAPI, map: anytype, print_buf: []u8) ZMap(@TypeOf(map)) {
+    return ZMap(@TypeOf(map)).init2(map, self, print_buf);
+}
+
 pub fn createZMap(self: *const ZAPI) ZMap(*Map) {
     const map = self.vsapi.createMap.?().?;
     return ZMap(@TypeOf(map)).init(map, self);

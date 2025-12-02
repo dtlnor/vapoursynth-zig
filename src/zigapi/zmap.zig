@@ -17,6 +17,11 @@ pub fn ZMap(comptime MT: type) type {
             return Self{ .map = map, .zapi = zapi };
         }
 
+        /// initialize ZMap with buffer for setError2
+        pub fn init2(map: MT, zapi: *const ZAPI, print_buf: []u8) Self {
+            return Self{ .map = map, .zapi = zapi, .print_buf = print_buf };
+        }
+
         pub fn free(self: *const Self) void {
             self.zapi.freeMap(self.map);
         }
@@ -282,7 +287,7 @@ pub fn ZMap(comptime MT: type) type {
                 const msg = std.fmt.bufPrintZ(buf, fmt, args) catch fmt;
                 self.zapi.mapSetError(self.map, msg);
             } else {
-                @panic("ZMap.setError2: print_buf is null, initialization required.");
+                @panic("ZMap.setError2: print_buf is null, use zapi.initZMap2 to initialize ZMap with a buffer.");
             }
         }
 

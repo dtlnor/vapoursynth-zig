@@ -84,12 +84,11 @@ const name = "Invert";
 
 fn invertCreate(in: ?*const vs.Map, out: ?*vs.Map, _: ?*anyopaque, core: ?*vs.Core, vsapi: ?*const vs.API) callconv(.c) void {
     var d: InvertData = undefined;
-    var print_buf: [256]u8 = undefined;
 
+    var print_buf = [_]u8{0} ** 512; // buffer for setError2
     const zapi = ZAPI.init(vsapi, core, null);
     const map_in = zapi.initZMap(in);
-    var map_out = zapi.initZMap(out);
-    map_out.print_buf = &print_buf;
+    const map_out = zapi.initZMap2(out, &print_buf);
 
     // getNodeVi returns a tuple with [vs.Node, vs.VideoInfo],
     // use getNodeVi2 if you want a struct.
